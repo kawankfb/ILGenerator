@@ -16,5 +16,5 @@ begin
     output := f
     end
     else
-    output := 88
+    output := b
 end
