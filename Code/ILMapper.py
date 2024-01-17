@@ -5,9 +5,9 @@ class ILMapper:
         self.global_variables = []
         self.label_counter = 0
 
-    binary_operators = ['>=', '>', '==', '!=', '<', '<=', '&&', '||', '+', '-', '*', '/', '=', '&&', '||', '>>', '<<',]
-    flow_control_operators = ['if', 'for', 'while','block']
-    scope_operators = ['begin', 'end']
+    binary_operators = ['>=', '>', '==', '!=', '<', '<=', '&&', '||', '+', '-', '*', '/', '=', '&&', '||', '>>', '<<', ]
+    flow_control_operators = ['if', 'for', 'while', 'block','switch','case','casedefault']
+    scope_operators = ['begin', 'end','break','']
     ternary_operators = ['?']
     operators = binary_operators + flow_control_operators + ternary_operators + scope_operators
 
@@ -16,7 +16,7 @@ class ILMapper:
         self.label_counter += 1
         return 'Label' + str(self.label_counter)
 
-    def add_global_variable(self,item):
+    def add_global_variable(self, item):
         if item in self.global_variables:
             return
         else:
@@ -52,12 +52,12 @@ class ILMapper:
                   ".maxstack  100\n")
 
         for i in range(len(self.global_variables)):
-            result += f".locals init ([{i}] int64 {self.global_variables[i] })\n"
+            result += f".locals init ([{i}] int64 {self.global_variables[i]})\n"
         if not 'output' in self.global_variables:
             result += f".locals init ([{len(self.global_variables)}] int64 output)\n"
 
         result += ("nop\n"
-                "///////////////////////// IL CODE\n")
+                   "///////////////////////// IL CODE\n")
 
         return result
 
@@ -128,10 +128,10 @@ class ILMapper:
             return self.assignment(a, b)
         first_load_statement = ''
         second_load_statement = ''
-        operator = 'add' if item == '+' else 'sub' if item == '-'\
-            else 'div' if item == '/' else 'mul' if item == '*' else\
-            'and' if item == '&&' else 'or' if item == '||' else\
-            'ceq' if item == '==' else 'cgt' if item == '>' else 'clt'
+        operator = 'add' if item == '+' else 'sub' if item == '-' \
+            else 'div' if item == '/' else 'mul' if item == '*' else \
+            'and' if item == '&&' else 'or' if item == '||' else \
+                'ceq' if item == '==' else 'cgt' if item == '>' else 'clt'
 
         if not self.is_temporary_operand(b):
             if self.is_identifier(b):
@@ -158,10 +158,10 @@ class ILMapper:
         if self.is_identifier(second_operand):
             load_statement = f"ldloc {second_operand}\n"
         elif self.is_temporary_operand(second_operand):
-            load_statement = ''
+            load_statement = self.il_codes.pop()
         else:
             load_statement = f"ldc.i8 {second_operand}\n"
-        return load_statement+f"stloc {first_operand}\n"
+        return load_statement + f"stloc {first_operand}\n"
 
     def ternary(self, condition, a, b):
         if not self.is_temporary_operand(b):
@@ -196,18 +196,26 @@ class ILMapper:
         return (condition_load_statement
                 + f"brtrue {true_start_label}\n"
                 + f"br {false_start_label}\n"
-                + f"{true_start_label+':'}\n"
+                + f"{true_start_label + ':'}\n"
                 + first_load_statement
                 + f"br {false_end_label} \n"
-                + f"{false_start_label+':'}\n"
+                + f"{false_start_label + ':'}\n"
                 + second_load_statement
-                + f"{false_end_label+':'}\n")
+                + f"{false_end_label + ':'}\n")
 
     def flow_control(self, item):
         if item == 'block':
             return self.block()
         if item == 'if':
             return self.if_statement()
+        if item == 'for':
+            return self.for_statement()
+        if item == 'switch':
+            return self.switch_statement()
+        if item == 'case':
+            return self.case_statement()
+        if item == 'casedefault':
+            return self.casedefault_statement()
 
     def block(self):
         temp_block_stack = []
@@ -220,7 +228,7 @@ class ILMapper:
         temp_block_stack.pop()
         result = ''
         while len(temp_block_stack) != 0:
-            result = result+ temp_block_stack.pop()
+            result = result + temp_block_stack.pop()
         return result
 
     def if_statement(self):
@@ -247,18 +255,171 @@ class ILMapper:
             true_label_end = self.create_new_label()
             false_label_end = self.create_new_label()
             result = (temp_if_stack.pop()
-                        + f"brtrue {true_label_start}\n"
-                        + f"br {true_label_end}\n"
-                        + f"{true_label_start}:\n"
-                        + temp_if_stack.pop()
-                        + f"br {false_label_end}\n"
-                        + f"{true_label_end}:\n"
-                        + temp_if_stack.pop()
-                        + f"{false_label_end}:\n")
+                      + f"brtrue {true_label_start}\n"
+                      + f"br {true_label_end}\n"
+                      + f"{true_label_start}:\n"
+                      + temp_if_stack.pop()
+                      + f"br {false_label_end}\n"
+                      + f"{true_label_end}:\n"
+                      + temp_if_stack.pop()
+                      + f"{false_label_end}:\n")
         return result
 
     # ///////GENERATOR__FUNCTIONS__END/////// define your generator functions above
+    def for_statement(self):
+        temp_for_stack = []
+        current_code = self.il_codes.pop()
+        if current_code != 'end':
+            return current_code
+        while current_code != 'begin':
+            current_code = self.il_codes.pop()
+            temp_for_stack.append(current_code)
+        temp_for_stack.pop()
+        result = ''
 
+        range_state = self.stack.pop()
+        range_state_is_temp = False
+        initialization_state = self.stack.pop()
+        initialization_load_statement = ''
+        range_load_statement = ''
+        counter = self.stack.pop()
+
+        for_body_statement = temp_for_stack[0]
+
+        if not self.is_temporary_operand(range_state):
+            if self.is_identifier(range_state):
+                range_load_statement = f"ldloc {range_state}\n"
+            else:
+                range_load_statement = f"ldc.i8 {range_state}\n"
+        else:
+            range_state_is_temp = True
+            range_load_statement = temp_for_stack[1]
+
+        if not self.is_temporary_operand(initialization_state):
+            if self.is_identifier(initialization_state):
+                initialization_load_statement = f"ldloc {initialization_state}\n"
+            else:
+                initialization_load_statement = f"ldc.i8 {initialization_state}\n"
+        else:
+            if range_state_is_temp:
+                initialization_load_statement = temp_for_stack[2]
+            else:
+                initialization_load_statement = temp_for_stack[1]
+
+        for_label_start = self.create_new_label()
+        for_label_end = self.create_new_label()
+        result = (initialization_load_statement +
+                  f"stloc {counter}\n" +
+                  f"{for_label_start}:\n" +
+                  f"ldloc {counter}\n" +
+                  range_load_statement +
+                  f"clt\n" +
+                  f"brfalse {for_label_end}\n" +
+                  for_body_statement +
+                  f"ldloc {counter}\n" +
+                  f"ldc.i8 1\n" +
+                  f"add\n" +
+                  f"stloc {counter}\n" +
+                  f"br {for_label_start}\n"+
+                  f"{for_label_end}:\n")
+        return result
+
+    def case_statement(self):
+        current_code = self.il_codes.pop()
+        has_break = False
+        case_body = None
+        if current_code == 'break':
+            has_break = True
+            case_body = self.il_codes.pop()
+        else:
+            case_body = current_code
+        case_condition_expression = self.stack.pop()
+        if not self.is_temporary_operand(case_condition_expression):
+            if self.is_identifier(case_condition_expression):
+                case_condition_load_statement = f"ldloc {case_condition_expression}\n"
+            else:
+                case_condition_load_statement = f"ldc.i8 {case_condition_expression}\n"
+        else:
+            case_condition_load_statement = self.il_codes.pop()
+
+        self.il_codes.append(case_condition_load_statement)
+        if has_break:
+            self.il_codes.append(case_body)
+            return 'break'
+        else:
+            return case_body
+
+    def casedefault_statement(self):
+        current_code = self.il_codes.pop()
+        has_break = False
+        case_body = None
+        if current_code == 'break':
+            has_break = True
+            case_body = self.il_codes.pop()
+        else:
+            case_body = current_code
+
+        self.il_codes.append('casedefault')
+        if has_break:
+            self.il_codes.append(case_body)
+            return 'break'
+        else:
+            return case_body
+
+    def switch_statement(self):
+        temp_switch_stack = []
+        current_code = self.il_codes.pop()
+        if current_code != 'end':
+            return current_code
+        while current_code != 'begin':
+            current_code = self.il_codes.pop()
+            temp_switch_stack.append(current_code)
+        temp_switch_stack.pop()
+
+        switch_condition_is_code = False
+
+        switch_condition_expression = self.stack.pop()
+        if not self.is_temporary_operand(switch_condition_expression):
+            if self.is_identifier(switch_condition_expression):
+                switch_condition_load_statement = f"ldloc {switch_condition_expression}\n"
+            else:
+                switch_condition_load_statement = f"ldc.i8 {switch_condition_expression}\n"
+        else:
+            switch_condition_load_statement = temp_switch_stack.pop()
+            switch_condition_is_code = True
+
+        result = ''
+        switch_end_label = self.create_new_label()
+
+        case_bodies = []
+        while len(temp_switch_stack) > 1:
+            case_condition_load_statement = temp_switch_stack.pop()
+            case_body_statement = temp_switch_stack.pop()
+            case_has_break = False
+            if len(temp_switch_stack) > 0:
+                current_code = temp_switch_stack.pop()
+                if current_code == 'break':
+                    case_has_break = True
+                else:
+                    temp_switch_stack.append(current_code)
+
+            case_start_label = self.create_new_label()
+
+            if case_condition_load_statement == 'casedefault':
+                result = result + f"br {case_start_label}\n"
+            else:
+                result = result + switch_condition_load_statement + case_condition_load_statement + "ceq\n" + f"brtrue {case_start_label}\n"
+
+            case_body = f"{case_start_label}:\n"
+            case_body = case_body + case_body_statement
+            if case_has_break:
+                case_body = case_body + f"br {switch_end_label}\n"
+            case_bodies.append(case_body)
+
+        for case_body in case_bodies:
+            result = result + case_body
+        result = result + f"{switch_end_label}:\n"
+        return result
 
 
 

@@ -15,7 +15,7 @@ class ASTListener(AssignmentStatementListener):
         self.q = queue.Queue()  # Use to print and visualize InClassPresentation
         self.g = nx.DiGraph()  # Use to visualize InClassPresentation
         self.max_x = 0
-        self.scoped_operators = ['if','for','while','block']
+        self.scoped_operators = ['if', 'for', 'while', 'block', 'switch']
 
     # -------------------------------------------------------
     def draw_tree(self, node, x, y):
@@ -80,7 +80,7 @@ class ASTListener(AssignmentStatementListener):
         # Draw the tree
         self.draw_tree(node=self.ast.root, x=0, y=0)
         tree = self.transform_binary_tree(self.ast.root)
-        #self.display_treeview(tree)
+        # self.display_treeview(tree)
 
         # Show the plot
         # plt.axis('off')
@@ -121,7 +121,19 @@ class ASTListener(AssignmentStatementListener):
         self.make_AST_subtree(tree_node=ctx, operator="if")
 
     def exitForst(self, ctx: AssignmentStatementParser.ForstContext):
-        self.make_AST_subtree(tree_node=ctx, operator="for")
+        end_child = self.ast.make_node("end", child=None, brother=None)
+        number_of_children = ctx.getChildCount()
+        body_child = ctx.getChild(number_of_children - 1).value_attr
+        body_child.brother = end_child
+        range_child = ctx.getChild(5).value_attr
+        range_child.brother = body_child
+        init_child = ctx.getChild(3).value_attr
+        init_child.brother = range_child
+        id_child = self.ast.make_node(ctx.getChild(1).getText(), child=None, brother=init_child)
+        first_child = self.ast.make_node("begin", child=None, brother=id_child)
+        sub_tree_pntr = self.ast.make_node(value="for", child=first_child, brother=None)
+        ctx.value_attr = sub_tree_pntr
+        self.ast.root = sub_tree_pntr
 
     def exitWhilest(self, ctx: AssignmentStatementParser.WhilestContext):
         self.make_AST_subtree(tree_node=ctx, operator="while")
@@ -131,6 +143,12 @@ class ASTListener(AssignmentStatementListener):
 
     def exitCase(self, ctx: AssignmentStatementParser.CaseContext):
         self.make_AST_subtree(tree_node=ctx, operator="case")
+
+    def exitCasedefault(self, ctx: AssignmentStatementParser.CaseContext):
+        self.make_AST_subtree(tree_node=ctx, operator="casedefault")
+
+    def exitBreakst(self, ctx: AssignmentStatementParser.CaseContext):
+        self.make_AST_subtree(tree_node=ctx, operator="break")
 
     def exitCond(self, ctx: AssignmentStatementParser.CondContext):
         operator = ctx.getChild(1).getText()  # Get the actual operator from the context
@@ -165,12 +183,12 @@ class ASTListener(AssignmentStatementListener):
         ctx.value_attr = ctx.term().value_attr
 
     def exitTerm_fact_mutiply(
-        self, ctx: AssignmentStatementParser.Term_fact_mutiplyContext
+            self, ctx: AssignmentStatementParser.Term_fact_mutiplyContext
     ):
         self.make_AST_subtree(tree_node=ctx, operator="*")
 
     def exitTerm_fact_divide(
-        self, ctx: AssignmentStatementParser.Term_fact_divideContext
+            self, ctx: AssignmentStatementParser.Term_fact_divideContext
     ):
         self.make_AST_subtree(tree_node=ctx, operator="/")
 
@@ -199,4 +217,3 @@ class ASTListener(AssignmentStatementListener):
             value=ctx.INT().getText(), child=None, brother=None
         )
         ctx.value_attr = numberPntr
-

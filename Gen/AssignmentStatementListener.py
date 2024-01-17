@@ -107,6 +107,24 @@ class AssignmentStatementListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AssignmentStatementParser#casedefault.
+    def enterCasedefault(self, ctx:AssignmentStatementParser.CasedefaultContext):
+        pass
+
+    # Exit a parse tree produced by AssignmentStatementParser#casedefault.
+    def exitCasedefault(self, ctx:AssignmentStatementParser.CasedefaultContext):
+        pass
+
+
+    # Enter a parse tree produced by AssignmentStatementParser#breakst.
+    def enterBreakst(self, ctx:AssignmentStatementParser.BreakstContext):
+        pass
+
+    # Exit a parse tree produced by AssignmentStatementParser#breakst.
+    def exitBreakst(self, ctx:AssignmentStatementParser.BreakstContext):
+        pass
+
+
     # Enter a parse tree produced by AssignmentStatementParser#forst.
     def enterForst(self, ctx:AssignmentStatementParser.ForstContext):
         pass

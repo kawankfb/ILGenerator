@@ -64,6 +64,16 @@ class AssignmentStatementVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AssignmentStatementParser#casedefault.
+    def visitCasedefault(self, ctx:AssignmentStatementParser.CasedefaultContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AssignmentStatementParser#breakst.
+    def visitBreakst(self, ctx:AssignmentStatementParser.BreakstContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AssignmentStatementParser#forst.
     def visitForst(self, ctx:AssignmentStatementParser.ForstContext):
         return self.visitChildren(ctx)

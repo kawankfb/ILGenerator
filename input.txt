@@ -1,0 +1,12 @@
+program TestProgram
+var
+    a : int
+    b : int
+    c : int
+    d : int
+    e : int
+    f : int
+begin
+    a := b >= c ? d : e
+    a := b >= c ? d : b==c ? e : f
+end

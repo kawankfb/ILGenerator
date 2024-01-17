@@ -46,11 +46,19 @@ whilest
 
 switchst
 	returns[value_attr = str(), type_attr = str()]:
-	'switch' '(' ID ')' NEWLINE* '{' NEWLINE* case+ '}';
+	'switch' '(' expr ')' NEWLINE* 'begin' NEWLINE* case+ casedefault? NEWLINE* 'end';
 
 case
 	returns[value_attr = str(), type_attr = str()]:
-	'case' INT ':' statement NEWLINE*;
+	'case' expr ':' NEWLINE* statement NEWLINE* breakst? NEWLINE*;
+
+casedefault
+    returns[value_attr = str(), type_attr = str()]:
+	'default' ':'NEWLINE* statement NEWLINE* breakst? NEWLINE*;
+
+breakst
+    returns[value_attr = str(), type_attr = str()]:
+    'break';
 
 forst
 	returns[value_attr = str(), type_attr = str()]:
