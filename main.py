@@ -11,6 +11,7 @@ import networkx as nx
 
 import argparse
 
+
 def main(args):
     # Step 1: Load input source into stream
     stream = FileStream(args.file, encoding='utf8')
@@ -42,12 +43,6 @@ def main(args):
         "linewidths": 1,
         "width": 1,
     }
-    # nx.draw_networkx(graph,with_labels=True, pos=None,labels=nx.get_node_attributes(graph, "label"), **options)
-
-    # if you can't install pygraphviz uncomment previous line and comment the next three
-    # from networkx.drawing.nx_agraph import graphviz_layout
-    # pos = graphviz_layout(graph, prog="dot")
-    # nx.draw(graph, pos, node_size=500, labels=nx.get_node_attributes(graph, "label"), alpha=0.5, node_color="cyan", with_labels=True)
 
     import pydot
     from networkx.drawing.nx_pydot import graphviz_layout
@@ -62,16 +57,17 @@ def main(args):
     post_order_traversal =[]
     for node in nx.dfs_postorder_nodes(graph, source=s):  # iterate over nodes in postorder
         label = graph.nodes[node].get('label', 'No label')
-        post_order_traversal.append(label) # display the node
+        post_order_traversal.append(label)  # display the node
     print("\n Finished")
     print(post_order_traversal)
     il_mapper = ILMapper()
     print(il_mapper.generate_intermediate_language(post_order_traversal))
 
+
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
         '-n', '--file',
-        help='Input source', default=r'input2.txt')
+        help='Input source', default=r'input.txt')
     args = argparser.parse_args()
     main(args)

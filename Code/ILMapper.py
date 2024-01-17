@@ -208,6 +208,8 @@ class ILMapper:
             return self.block()
         if item == 'if':
             return self.if_statement()
+        if item == 'while':
+            return self.while_statement()
         if item == 'for':
             return self.for_statement()
         if item == 'switch':
@@ -240,6 +242,7 @@ class ILMapper:
             current_code = self.il_codes.pop()
             temp_if_stack.append(current_code)
         temp_if_stack.pop()
+        self.stack.pop()
         result = ''
         if len(temp_if_stack) == 2:
             true_label_start = self.create_new_label()
@@ -359,7 +362,7 @@ class ILMapper:
         else:
             case_body = current_code
 
-        self.il_codes.append('casedefault')
+        self.il_codes.append('default')
         if has_break:
             self.il_codes.append(case_body)
             return 'break'
@@ -376,8 +379,6 @@ class ILMapper:
             temp_switch_stack.append(current_code)
         temp_switch_stack.pop()
 
-        switch_condition_is_code = False
-
         switch_condition_expression = self.stack.pop()
         if not self.is_temporary_operand(switch_condition_expression):
             if self.is_identifier(switch_condition_expression):
@@ -386,13 +387,12 @@ class ILMapper:
                 switch_condition_load_statement = f"ldc.i8 {switch_condition_expression}\n"
         else:
             switch_condition_load_statement = temp_switch_stack.pop()
-            switch_condition_is_code = True
 
         result = ''
         switch_end_label = self.create_new_label()
 
         case_bodies = []
-        while len(temp_switch_stack) > 1:
+        while len(temp_switch_stack) >= 2:
             case_condition_load_statement = temp_switch_stack.pop()
             case_body_statement = temp_switch_stack.pop()
             case_has_break = False
@@ -405,7 +405,7 @@ class ILMapper:
 
             case_start_label = self.create_new_label()
 
-            if case_condition_load_statement == 'casedefault':
+            if case_condition_load_statement == 'default':
                 result = result + f"br {case_start_label}\n"
             else:
                 result = result + switch_condition_load_statement + case_condition_load_statement + "ceq\n" + f"brtrue {case_start_label}\n"
@@ -419,6 +419,27 @@ class ILMapper:
         for case_body in case_bodies:
             result = result + case_body
         result = result + f"{switch_end_label}:\n"
+        return result
+
+    def while_statement(self):
+        temp_while_stack = []
+        current_code = self.il_codes.pop()
+        if current_code != 'end':
+            return current_code
+        while current_code != 'begin':
+            current_code = self.il_codes.pop()
+            temp_while_stack.append(current_code)
+        temp_while_stack.pop()
+        self.stack.pop()
+        result = ''
+        label_start = self.create_new_label()
+        label_end = self.create_new_label()
+        result = (f"{label_start}:\n"
+                  + temp_while_stack.pop()
+                  + f"brfalse {label_end}\n"
+                  + temp_while_stack.pop()
+                  + f"br {label_start}\n"
+                  + f"{label_end}:\n")
         return result
 
 
