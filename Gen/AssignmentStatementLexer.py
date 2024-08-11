@@ -1,4 +1,4 @@
-# Generated from C:/PHD/ILGenerator/AssignmentStatement.g4 by ANTLR 4.13.1
+# Generated from C:/PHD/ILGenerator_normal_AST/AssignmentStatement.g4 by ANTLR 4.13.1
 from antlr4 import *
 from io import StringIO
 import sys

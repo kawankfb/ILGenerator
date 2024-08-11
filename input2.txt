@@ -1,0 +1,17 @@
+program TestProgram
+var
+    a : int
+    b : int
+    c : int
+    d : int
+    e : int
+    f : int
+begin
+    a:= 2
+    b:=0
+    c:=1
+    for a:=5 to 7 do
+        c:=c+1
+
+    output:= c
+end

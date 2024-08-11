@@ -13,7 +13,9 @@ declaration
 	'var' NEWLINE* (variable_declaration NEWLINE*)+;
 
 variable_declaration
-	returns[value_attr = str(), type_attr = str()]: ID ':' type;
+	returns[value_attr = str(), type_attr = str()]: id ':' type;
+
+id: ID;
 
 type
 	returns[value_attr = str(), type_attr = str()]:
@@ -35,21 +37,21 @@ statement
 	| forst;
 
 ifst
-	returns[value_attr = str(), type_attr = str()]:
+	returns[value_attr = str(), type_attr = str(), compound = bool()]:
 	'if' cond 'then' NEWLINE* statement NEWLINE* (
 		'else' NEWLINE* statement
 	)?;
 
 whilest
-	returns[value_attr = str(), type_attr = str()]:
+	returns[value_attr = str(), type_attr = str(), compound = bool()]:
 	'while' cond 'do' NEWLINE* statement;
 
 switchst
-	returns[value_attr = str(), type_attr = str()]:
+	returns[value_attr = str(), type_attr = str(), compound = bool()]:
 	'switch' '(' expr ')' NEWLINE* 'begin' NEWLINE* case+ casedefault? NEWLINE* 'end';
 
 case
-	returns[value_attr = str(), type_attr = str()]:
+	returns[value_attr = str(), type_attr = str(),]:
 	'case' expr ':' NEWLINE* statement NEWLINE* breakst? NEWLINE*;
 
 casedefault
@@ -61,15 +63,15 @@ breakst
     'break';
 
 forst
-	returns[value_attr = str(), type_attr = str()]:
-	'for' ID ':=' expr 'to' expr 'do' NEWLINE* statement;
+	returns[value_attr = str(), type_attr = str(), compound = bool()]:
+	'for' id ':=' expr 'to' expr 'do' NEWLINE* statement;
 
 cond
 	returns[value_attr = str(), type_attr = str()]:
 	expr ('>' | '<' | '==' | '!=' | '<=' | '>=' | '&&' | '||' ) expr;
 
 assign
-	returns[value_attr = str(), type_attr = str()]: ID ':=' (expr | ternary);
+	returns[value_attr = str(), type_attr = str()]: id ':=' (expr | ternary);
 
 ternary
     returns[value_attr = str(), type_attr = str()]:

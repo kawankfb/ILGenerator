@@ -6,8 +6,8 @@ class ILMapper:
         self.label_counter = 0
 
     binary_operators = ['>=', '>', '==', '!=', '<', '<=', '&&', '||', '+', '-', '*', '/', '=', '&&', '||', '>>', '<<', ]
-    flow_control_operators = ['if', 'for', 'while', 'block','switch','case','casedefault']
-    scope_operators = ['begin', 'end','break','']
+    flow_control_operators = ['if', 'forst', 'whilest', 'block','switchst','case','casedefault']
+    scope_operators = ['begin_scope_operator', 'end_scope_operator','break','']
     ternary_operators = ['?']
     operators = binary_operators + flow_control_operators + ternary_operators + scope_operators
 
@@ -29,6 +29,7 @@ class ILMapper:
             return False
 
     def is_identifier(self, item):
+        print(item)
         if not self.is_operator(item) and item[0].isalpha():
             return True
         else:
@@ -88,6 +89,8 @@ class ILMapper:
         for item in post_order_array:
             if self.is_operator(item):
                 self.il_codes.append(self.generate_il_based_on_operator(item))
+                if None in self.il_codes:
+                    print("what")
             else:
                 if self.is_identifier(item):
                     self.add_global_variable(item)
@@ -208,11 +211,11 @@ class ILMapper:
             return self.block()
         if item == 'if':
             return self.if_statement()
-        if item == 'while':
+        if item == 'whilest':
             return self.while_statement()
-        if item == 'for':
+        if item == 'forst':
             return self.for_statement()
-        if item == 'switch':
+        if item == 'switchst':
             return self.switch_statement()
         if item == 'case':
             return self.case_statement()
@@ -222,9 +225,9 @@ class ILMapper:
     def block(self):
         temp_block_stack = []
         current_code = self.il_codes.pop()
-        if current_code != 'end':
+        if current_code != 'end_scope_operator':
             return current_code
-        while current_code != 'begin':
+        while current_code != 'begin_scope_operator':
             current_code = self.il_codes.pop()
             temp_block_stack.append(current_code)
         temp_block_stack.pop()
@@ -236,9 +239,9 @@ class ILMapper:
     def if_statement(self):
         temp_if_stack = []
         current_code = self.il_codes.pop()
-        if current_code != 'end':
+        if current_code != 'end_scope_operator':
             return current_code
-        while current_code != 'begin':
+        while current_code != 'begin_scope_operator':
             current_code = self.il_codes.pop()
             temp_if_stack.append(current_code)
         temp_if_stack.pop()
@@ -272,9 +275,9 @@ class ILMapper:
     def for_statement(self):
         temp_for_stack = []
         current_code = self.il_codes.pop()
-        if current_code != 'end':
+        if current_code != 'end_scope_operator':
             return current_code
-        while current_code != 'begin':
+        while current_code != 'begin_scope_operator':
             current_code = self.il_codes.pop()
             temp_for_stack.append(current_code)
         temp_for_stack.pop()
@@ -372,9 +375,9 @@ class ILMapper:
     def switch_statement(self):
         temp_switch_stack = []
         current_code = self.il_codes.pop()
-        if current_code != 'end':
+        if current_code != 'end_scope_operator':
             return current_code
-        while current_code != 'begin':
+        while current_code != 'begin_scope_operator':
             current_code = self.il_codes.pop()
             temp_switch_stack.append(current_code)
         temp_switch_stack.pop()
@@ -424,9 +427,9 @@ class ILMapper:
     def while_statement(self):
         temp_while_stack = []
         current_code = self.il_codes.pop()
-        if current_code != 'end':
+        if current_code != 'end_scope_operator':
             return current_code
-        while current_code != 'begin':
+        while current_code != 'begin_scope_operator':
             current_code = self.il_codes.pop()
             temp_while_stack.append(current_code)
         temp_while_stack.pop()

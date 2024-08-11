@@ -1,4 +1,4 @@
-# Generated from C:/PHD/ILGenerator/AssignmentStatement.g4 by ANTLR 4.13.1
+# Generated from C:/PHD/ILGenerator_normal_AST/AssignmentStatement.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .AssignmentStatementParser import AssignmentStatementParser
@@ -41,6 +41,15 @@ class AssignmentStatementListener(ParseTreeListener):
 
     # Exit a parse tree produced by AssignmentStatementParser#variable_declaration.
     def exitVariable_declaration(self, ctx:AssignmentStatementParser.Variable_declarationContext):
+        pass
+
+
+    # Enter a parse tree produced by AssignmentStatementParser#id.
+    def enterId(self, ctx:AssignmentStatementParser.IdContext):
+        pass
+
+    # Exit a parse tree produced by AssignmentStatementParser#id.
+    def exitId(self, ctx:AssignmentStatementParser.IdContext):
         pass
 
 

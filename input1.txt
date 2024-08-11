@@ -1,0 +1,29 @@
+program TestProgram
+var
+    a : int
+    b : int
+    c : int
+    d : int
+    e : int
+    f : int
+begin
+    a:= 2
+    b:=0
+    c:=1
+    switch (a+3*6)
+        begin
+            case 20 :
+                c:=c*14
+            case 15 :
+                begin
+                    c:=c+5
+                    c:=c-2
+                end
+            default:
+            c:=0
+        end
+    for a:=5 to 7 do
+        c:=c+1
+
+    output:= c
+end

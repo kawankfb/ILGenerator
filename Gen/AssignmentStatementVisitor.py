@@ -1,4 +1,4 @@
-# Generated from C:/PHD/ILGenerator/AssignmentStatement.g4 by ANTLR 4.13.1
+# Generated from C:/PHD/ILGenerator_normal_AST/AssignmentStatement.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .AssignmentStatementParser import AssignmentStatementParser
@@ -26,6 +26,11 @@ class AssignmentStatementVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AssignmentStatementParser#variable_declaration.
     def visitVariable_declaration(self, ctx:AssignmentStatementParser.Variable_declarationContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AssignmentStatementParser#id.
+    def visitId(self, ctx:AssignmentStatementParser.IdContext):
         return self.visitChildren(ctx)
 
 
